@@ -6,7 +6,7 @@ Built on **BrainPy** (accelerated by JAX), Cortex is hardware-ready for direct n
 
 ---
 
-## ⚡ Key Benchmarks
+## Key Benchmarks
 
 We mapped the architecture through standard execution harnesses to directly challenge contemporary LLMs across MemScale, Energy, and Reasoning datasets.
 
@@ -28,7 +28,7 @@ Using the Subcortical Basal Ganglia to dynamically gate reasoning hypotheses (Ro
 
 ---
 
-## 🧠 Architectural Overview
+## Architectural Overview
 
 Cortex moves beyond generic connectionism by implementing functional biological macro-structures:
 
@@ -43,7 +43,7 @@ Cortex moves beyond generic connectionism by implementing functional biological 
 
 ---
 
-## 🚀 Installation & Logistics
+## Installation & Logistics
 
 ### Prerequisites
 *   Python 3.10+
@@ -84,7 +84,7 @@ python sim/export_nir.py
 
 ---
 
-## 🔬 Design Philosophy
+## Design Philosophy
 
 *"To build an artificial intelligence model that comprehensively mimics the human brain in every sense, it is imperative to abandon static, feed-forward, and artificial design paradigms."*
 
