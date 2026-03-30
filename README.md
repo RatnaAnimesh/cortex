@@ -1,6 +1,6 @@
 # Cortex: Neuromorphic Operating System for Intelligence
 
-**Cortex** is a continuous-time, purely neuromorphic architecture designed as a fractional-compute alternative to Transformer-based Large Language Models (LLMs). By discarding digital sequence structures (KV-Caches, dense matrix multiplications) and replacing them with physical **Spiking Neural Networks (SNNs)** and **Subcortical Gating**, Cortex achieves true $\mathcal{O}(1)$ memory scaling and demonstrates System-2 geometric reasoning out-of-the-box.
+**Cortex** is a continuous-time, purely neuromorphic architecture designed as a fractional-compute alternative to Transformer-based Large Language Models (LLMs). By discarding digital sequence structures (KV-Caches, dense matrix multiplications) and replacing them with physical **Spiking Neural Networks (SNNs)** and **Subcortical Gating**, Cortex achieves true O(1) memory scaling and demonstrates System-2 geometric reasoning out-of-the-box.
 
 Built on **BrainPy** (accelerated by JAX), Cortex is hardware-ready for direct neuromorphic compilation via the Neuromorphic Intermediate Representation (NIR) standard, making it the ideal World Model operating system for Intel Loihi 2 and edge AI deployment.
 
@@ -10,8 +10,8 @@ Built on **BrainPy** (accelerated by JAX), Cortex is hardware-ready for direct n
 
 We mapped the architecture through standard execution harnesses to directly challenge contemporary LLMs across MemScale, Energy, and Reasoning datasets.
 
-### 1. $\mathcal{O}(1)$ Memory Scaling
-Transformers suffer from quadratic memory growth ($\mathcal{O}(T^2)$) due to their digital Autoregressive KV-Cache. Cortex replaces the cache with **physical synaptic traces**.
+### 1. O(1) Memory Scaling
+Transformers suffer from quadratic memory growth (O(T^2)) due to their digital Autoregressive KV-Cache. Cortex replaces the cache with **physical synaptic traces**.
 * **At 8,192 Context:** Transformer LLMs hit **~4.1 GB** per user cache.
 * **At 8,192 Context:** Cortex maintains a flat **1.50 MB** footprint.
 * **Advantage:** A **2,730x reduction** in context scaling memory costs.
@@ -33,7 +33,7 @@ Using the Subcortical Basal Ganglia to dynamically gate reasoning hypotheses (Ro
 Cortex moves beyond generic connectionism by implementing functional biological macro-structures:
 
 1.  **Thalamocortical Loops (`arch/thalamus.py`, `arch/hierarchy.py`):**
-    Implements a 6-layer laminated hierarchical column. Context is stored directly as $\mathcal{O}(T)$ linear attention via physical synaptic traces using Reward-Modulated STDP.
+    Implements a 6-layer laminated hierarchical column. Context is stored directly as O(T) linear attention via physical synaptic traces using Reward-Modulated STDP.
 2.  **Basal Ganglia Action Selection (`arch/basal_ganglia.py`):**
     Manages "System-2" reasoning. Tonically inhibits the cortex, reading continuous grid states and specifically disinhibiting winning feature channels based on contextual reward (Striatum/GPi pathways). 
 3.  **Cerebellar Error Correction (`arch/cerebellum.py`):**
@@ -58,7 +58,7 @@ pip install -r requirements.txt
 
 ### Running the Simulators
 
-Evaluating Memory Compression ($\mathcal{O}(1)$ scale proofs):
+Evaluating Memory Compression (O(1) scale proofs):
 ```bash
 python sim/memory_stress_test.py
 ```
