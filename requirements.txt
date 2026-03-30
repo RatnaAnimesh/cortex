@@ -1,0 +1,10 @@
+jax
+jaxlib
+brainpy
+numpy
+matplotlib
+pytest
+dm_control
+neurobench
+nir
+lava-dl
