@@ -32,7 +32,7 @@ class HierarchicalCortex(bp.dyn.DynamicalSystem):
             l4_size = self.levels[i].L4.size[0] if isinstance(self.levels[i].L4.size, (tuple, list)) else self.levels[i].L4.size
             pool_factor = max(1, lower_v.size // l4_size)
             p_size = pool_factor * l4_size
-            spatial_in = bm.mean(bm.reshape(lower_v[:p_size], (-1, l4_size, pool_factor)), axis=2)
+            spatial_in = bm.mean(bm.reshape(lower_v[:p_size], (l4_size, pool_factor)), axis=1)
             self.levels[i].update(ThalamicInput=spatial_in, Reward=Reward)
             
             # Feedback: Higher level L6 projects back to lower level L1 (Apical)
