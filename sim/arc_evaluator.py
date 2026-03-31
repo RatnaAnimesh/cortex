@@ -33,43 +33,64 @@ class ARCSymmetryInductor(bp.dyn.DynamicalSystem):
         from core.grid_decoder import SpikingGridDecoder
         self.decoder = SpikingGridDecoder(output_size=135, grid_size=(30, 30))
         
-        # 1. Induction Phase (Train Loops)
-        for pair in train_pairs:
-            input_grid = np.array(pair['input'])
-            target_grid = np.array(pair['output'])
-            if input_grid.ndim == 2:
-                input_grid = input_grid[np.newaxis, ...]
-            if target_grid.ndim == 2:
-                target_grid = target_grid[np.newaxis, ...]
-                
-            self.encoder = SpikingGridEncoder(grid_size=(30, 30), batch_size=input_grid.shape[0])
-            self.encoder.encode(input_grid)
-            target_spikes = self.encoder.encode(target_grid) # for reward calculus only
+        from core.augmentations import augment_arc_pairs
+        
+        # 1. Test-Time Training (Refinement Loops)
+        # SOTA-level Synthetic Augmentation expands exposure to invariant forms
+        augmented_pairs = augment_arc_pairs(train_pairs)
+        
+        epoch = 0
+        max_epochs = 5
+        while epoch < max_epochs:
+            epoch_accuracy = 0.0
             
-            for t in range(max_train_steps):
-                spikes_in = self.encoder.update(t * 0.1)
-                bg_disinhibition = self.basal_ganglia.get_disinhibition_signal()
-                
-                # Spatial Pooling into Cortex
-                B = spikes_in.shape[0]
-                flat_in = bm.reshape(spikes_in, (B, -1))
-                spatial_in = bm.mean(bm.reshape(flat_in, (B, 180, 5)), axis=2)
-                spatial_in = spatial_in[0] if B == 1 else spatial_in
-                self.cortex.update(PrimaryInput=spatial_in, Reward=0.0)
-                
-                # Internal representation correlation
-                output_spikes = self.cortex.get_output()
-                if output_spikes.ndim == 1:
-                    output_spikes = bm.expand_dims(output_spikes, axis=0)
+            for pair in augmented_pairs:
+                input_grid = np.array(pair['input'])
+                target_grid = np.array(pair['output'])
+                if input_grid.ndim == 2:
+                    input_grid = input_grid[np.newaxis, ...]
+                if target_grid.ndim == 2:
+                    target_grid = target_grid[np.newaxis, ...]
                     
-                repeats = (900 // 135) + 1
-                projected = bm.repeat(output_spikes, repeats, axis=1)[:, :900]
-                projected = bm.reshape(projected, (B, 30, 30))
-                match_matrix = (bm.abs(projected - target_spikes) < 1.0)
+                self.encoder = SpikingGridEncoder(grid_size=(30, 30), batch_size=input_grid.shape[0])
+                self.encoder.encode(input_grid)
+                target_spikes = self.encoder.encode(target_grid) # for reward calculus only
                 
-                # Inductive Reward Loop mapping internal structures
-                reward = (bm.sum(match_matrix) / (30*30)) * 100.0
-                self.basal_ganglia.update(CorticalInput=bm.mean(output_spikes), EnvironmentalReward=reward)
+                final_match_score = 0
+                for t in range(max_train_steps):
+                    spikes_in = self.encoder.update(t * 0.1)
+                    bg_disinhibition = self.basal_ganglia.get_disinhibition_signal()
+                    
+                    # Spatial Pooling into Cortex
+                    B = spikes_in.shape[0]
+                    flat_in = bm.reshape(spikes_in, (B, -1))
+                    spatial_in = bm.mean(bm.reshape(flat_in, (B, 180, 5)), axis=2)
+                    spatial_in = spatial_in[0] if B == 1 else spatial_in
+                    self.cortex.update(PrimaryInput=spatial_in, Reward=0.0)
+                    
+                    # Internal representation correlation
+                    output_spikes = self.cortex.get_output()
+                    if output_spikes.ndim == 1:
+                        output_spikes = bm.expand_dims(output_spikes, axis=0)
+                        
+                    repeats = (900 // 135) + 1
+                    projected = bm.repeat(output_spikes, repeats, axis=1)[:, :900]
+                    projected = bm.reshape(projected, (B, 30, 30))
+                    match_matrix = (bm.abs(projected - target_spikes) < 1.0)
+                    final_match_score = float(bm.sum(match_matrix).item()) / (30*30)
+                    
+                    # Inductive Reward Loop driving Neuroplasticity
+                    reward = final_match_score * 100.0
+                    self.basal_ganglia.update(CorticalInput=bm.mean(output_spikes), EnvironmentalReward=reward)
+            
+                epoch_accuracy += final_match_score
+            
+            # TTT Early-Stopping: Check if STDP is fully converged on all demonstration invariants
+            if (epoch_accuracy / len(augmented_pairs)) >= 0.99:
+                # Loop physically saturated; rule is induced
+                break
+            
+            epoch += 1
                 
         # 2. Deduction Phase (Zero-Shot Output on Test Grid)
         if test_input.ndim == 2:

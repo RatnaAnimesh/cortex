@@ -34,11 +34,11 @@ class CorticalColumn(bp.dyn.DynamicalSystem):
                                 conn=bp.conn.FixedProb(0.1))
         
         # L2/3 -> L5 (Deep integration)
-        self.conn_l23_l5 = STDP(pre=self.L23, post=self.L5,
+        self.conn_l23_l5 = R_STDP(pre=self.L23, post=self.L5,
                                 conn=bp.conn.FixedProb(0.15))
         
         # L5 -> L6 (Feedback relay)
-        self.conn_l5_l6 = STDP(pre=self.L5, post=self.L6,
+        self.conn_l5_l6 = R_STDP(pre=self.L5, post=self.L6,
                                 conn=bp.conn.FixedProb(0.1))
         
         self.conn_l6_l4 = HomeostaticScaling(pre=self.L6, post=self.L4,
