@@ -32,7 +32,13 @@ class Cerebellum(bp.dyn.DynamicalSystem):
         # Expansion of Sensory and Cortical data in Granule Cells
         # Repeat the vector drive across the expanded population
         gr_drive = (SensoryInput + CorticalCopy) / 2. if SensoryInput is not None else 0.
-        expanded_drive = bm.repeat(gr_drive, 5) # 50*5 = 250
+        gr_sz = self.GR.size[0] if isinstance(self.GR.size, (tuple, list)) else self.GR.size
+        # Correctly broadcast scaler or vector to the 250 Granule nodes
+        if isinstance(gr_drive, (int, float)) or (hasattr(gr_drive, 'ndim') and gr_drive.ndim == 0):
+            expanded_drive = bm.full((gr_sz,), float(gr_drive))
+        else:
+            expanded_drive = bm.repeat(gr_drive, 5, axis=-1)
+        
         self.GR.update(x=expanded_drive)
         
         # Integration of Purkinje and DCN...

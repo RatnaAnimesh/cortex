@@ -22,6 +22,9 @@ class BasalGanglia(bp.dyn.DynamicalSystem):
 
         # 3. Neuromodulation: SNc
         self.SNc = LIF(1)
+        
+        # 4. Moving average trace for smooth gating
+        self.gpi_rate = bm.Variable(bm.zeros(1))
 
     def update(self, CorticalInput=None, EnvironmentalReward=None):
         dt = getattr(bp.share, 'dt', 0.1)
@@ -43,20 +46,25 @@ class BasalGanglia(bp.dyn.DynamicalSystem):
 
         # Output stage: GPi/SNr receives inhibition from D1
         # Disinhibition logic: more D1 activity -> less GPi activity -> more Thalamic activity
-        # High-magnitude inhibition to ensure clean gating
-        gpi_inhibition = bm.sum(self.D1_MSN.spike) * -50.0
-        # High tonic baseline current for GPi (dominates by default)
-        gpi_drive = 20.0 + gpi_inhibition 
+        # Scale to ensure stable physical integration
+        gpi_inhibition = bm.sum(self.D1_MSN.spike.astype(float)) * -5.0
+        # Gentle tonic baseline current for GPi (dominates by default)
+        g_size = self.GPi_SNr.size[0] if isinstance(self.GPi_SNr.size, (tuple, list)) else self.GPi_SNr.size
+        gpi_drive = bm.full((g_size,), 30.0 + gpi_inhibition)
         
         self.GPi_SNr.update(x=gpi_drive)
+        
+        # Smooth the firing rate to create a continuous inhibitory gate
+        self.gpi_rate.value += (-self.gpi_rate + bm.mean(self.GPi_SNr.spike.astype(float))) / 5.0 * dt
 
     def get_disinhibition_signal(self):
         """
-        Returns the spiking activity of the GPi/SNr.
-        High value (1.0) = Thalamus is inhibited.
-        Low value (0.0) = Thalamus is disinhibited.
+        Returns the normalized spiking activity of the GPi/SNr (0.0 to 1.0).
+        High value (~1.0) = Thalamus is inhibited.
+        Low value (~0.0) = Thalamus is disinhibited.
         """
-        return bm.mean(self.GPi_SNr.spike.astype(float))
+        # Multiply by scaling factor because average biological firing fraction per dt is << 1.0
+        return bm.clip(self.gpi_rate[0] * 50.0, 0.0, 1.0)
 
 # In arch/thalamus.py (Logic only, I will use replace_file_content for the file next)
 # gate = 1.0 - BG_Disinhibition

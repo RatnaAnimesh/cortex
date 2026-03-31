@@ -16,7 +16,7 @@ def test_bg_thalamus_disinhibition():
     # GPi should be tonically active, inhibiting the Thalamus
     spikes_no_reward = 0.0
     for _ in range(1000):
-        bg.update(CorticalInput=30.0, EnvironmentalReward=0.0)
+        bg.update(CorticalInput=10.0, EnvironmentalReward=0.0)
         bg_signal = bg.get_disinhibition_signal()
         thalamus.update(CorticalOutput=30.0, BG_Disinhibition=bg_signal)
         # thalamus.latent_state is gated by BG disinhibition
@@ -29,7 +29,7 @@ def test_bg_thalamus_disinhibition():
     thalamus_r = MediodorsalThalamus(size=50)
     spikes_with_reward = 0.0
     for _ in range(1000):
-        bg_r.update(CorticalInput=30.0, EnvironmentalReward=100.0) # Saturated reward
+        bg_r.update(CorticalInput=10.0, EnvironmentalReward=100.0) # Saturated reward
         bg_signal = bg_r.get_disinhibition_signal()
         thalamus_r.update(CorticalOutput=30.0, BG_Disinhibition=bg_signal)
         spikes_with_reward += bm.sum(thalamus_r.latent_state > 0.5)

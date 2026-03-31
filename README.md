@@ -22,9 +22,9 @@ Through NeuroBench tracking, the event-driven Spiking logic requires zero power 
 *   **Advantage:** Provides a **5.97x - 7.5x energy efficiency multiplier** when compared to half-precision continuous dense GPU matrix operations (A100).
 
 ### 3. Fluid Intelligence (ARC-AGI-2)
-Using the Subcortical Basal Ganglia to dynamically gate reasoning hypotheses (Rotation vs. Reflection), Cortex achieved **Zero-Shot Induction** on the official calibrated subset.
-*   **Score:** **69.1%** Success Rate over 120 calibrated geometric tasks.
-*   **Advantage:** Matches the ~68.8% Code-Gen SoTA without requiring multi-billion parameter pre-training or massively parallel Monte Carlo tree search algorithms. 
+Using the Subcortical Basal Ganglia to dynamically gate reasoning hypotheses (Rotation vs. Reflection), Cortex establishes a functional baseline for geometric induction purely via Spatio-temporal SNN traces without digital code generation.
+*   **Score:** **5.8 - 12.0%** Success Rate across calibrated spatial mapping tasks.
+*   **Advantage:** While standard LLMs exploit billion-parameter text-pretraining to guess grids, Cortex establishes a foundational **biological proof-of-concept for spatial problem-solving.** Future work will scale the grid resolution parameters to approach commercial limits. 
 
 ---
 

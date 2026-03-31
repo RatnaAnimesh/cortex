@@ -49,9 +49,11 @@ class ARCSymmetryInductor(bp.dyn.DynamicalSystem):
             bg_disinhibition = self.basal_ganglia.get_disinhibition_signal()
             
             # Cortex update (Gated hierarchy)
-            # Flattening input spikes for column L4
-            flat_in = bm.reshape(spikes_in, (spikes_in.shape[0], -1))
-            self.cortex.update(PrimaryInput=bm.mean(flat_in, axis=1), Reward=0.0)
+            # Pool spatial grid from 900 -> 180 to maintain topology into L4
+            B = spikes_in.shape[0]
+            flat_in = bm.reshape(spikes_in, (B, -1))
+            spatial_in = bm.mean(bm.reshape(flat_in, (B, 180, 5)), axis=2)
+            self.cortex.update(PrimaryInput=spatial_in, Reward=0.0)
             
             # Extract batched L6 values (B, 135)
             # Output check

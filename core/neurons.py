@@ -28,7 +28,7 @@ class LIF(bp.dyn.NeuGroup):
         # check spikes
         self.spike.value = self.V >= self.V_th
         self.t_last_spike.value = bm.where(self.spike, getattr(bp.share, 't', 0.0), self.t_last_spike)
-        self.V.value = bm.where(self.spike, self.reset_v(), self.V)
+        self.V.value = bm.where(self.spike, self.reset_v(), bm.maximum(self.V, -90.0))
 
     def reset_v(self):
         return self.V_reset
@@ -102,6 +102,6 @@ class MultiCompartmentNeuron(bp.dyn.NeuGroup):
         self.input_apical.value = bm.zeros(self.size)
         
         self.spike.value = self.V_soma >= self.V_th
-        self.V_soma.value = bm.where(self.spike, 0., self.V_soma)
-        self.V_basal.value = bm.where(self.spike, 0., self.V_basal)
-        self.V_apical.value = bm.where(self.spike, 0., self.V_apical)
+        self.V_soma.value = bm.where(self.spike, 0., bm.maximum(self.V_soma, -90.0))
+        self.V_basal.value = bm.where(self.spike, 0., bm.maximum(self.V_basal, -90.0))
+        self.V_apical.value = bm.where(self.spike, 0., bm.maximum(self.V_apical, -90.0))

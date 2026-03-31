@@ -35,7 +35,9 @@ def test_mcn_gating():
     # Case 1: Basal input only
     mcn.V_soma.value = bm.zeros(1)
     for _ in range(100):
-        mcn.update(I_basal=5., I_apical=0.)
+        mcn.input_basal.value = bm.full(1, 5.)
+        mcn.input_apical.value = bm.zeros(1)
+        mcn.update()
     v_no_apical = mcn.V_soma[0]
     
     # Reset
@@ -45,7 +47,9 @@ def test_mcn_gating():
     
     # Case 2: Basal + Apical input
     for _ in range(100):
-        mcn.update(I_basal=5., I_apical=10.)
+        mcn.input_basal.value = bm.full(1, 5.)
+        mcn.input_apical.value = bm.full(1, 10.)
+        mcn.update()
     v_with_apical = mcn.V_soma[0]
     
     # Coincidence gating should result in higher somatic potential

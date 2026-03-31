@@ -27,12 +27,20 @@ class HierarchicalCortex(bp.dyn.DynamicalSystem):
         # 2. Sequential Hierarchy Updates
         for i in range(1, self.num_levels):
             # Feedforward: Lower level L2/3 projects to higher level L4
+            # Keep spatial vectors via pooling rather than flat mean
             lower_v = self.levels[i-1].L23.V_soma
-            self.levels[i].update(ThalamicInput=bm.mean(lower_v), Reward=Reward)
+            l4_size = self.levels[i].L4.size[0] if isinstance(self.levels[i].L4.size, (tuple, list)) else self.levels[i].L4.size
+            pool_factor = max(1, lower_v.size // l4_size)
+            p_size = pool_factor * l4_size
+            spatial_in = bm.mean(bm.reshape(lower_v[:p_size], (-1, l4_size, pool_factor)), axis=2)
+            self.levels[i].update(ThalamicInput=spatial_in, Reward=Reward)
             
             # Feedback: Higher level L6 projects back to lower level L1 (Apical)
             higher_feedback = self.levels[i].L6.V
-            self.levels[i-1].L5.input_apical.value += bm.mean(higher_feedback)
+            l5_size = self.levels[i-1].L5.size[0] if isinstance(self.levels[i-1].L5.size, (tuple, list)) else self.levels[i-1].L5.size
+            expand_factor = (l5_size // higher_feedback.size) + 1
+            feedback_in = bm.repeat(higher_feedback, expand_factor, axis=-1)[..., :l5_size]
+            self.levels[i-1].L5.input_apical.value += feedback_in
             
     def get_output(self):
         """Returns the activity of the highest level in the hierarchy."""
